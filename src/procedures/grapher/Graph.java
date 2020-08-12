@@ -108,7 +108,7 @@ public class Graph {
     /**
      * Prints a formatted text with graph information.
      */
-    public void print_nodes() {
+    public void print_graph() {
         for (Node n : nodes.values()) {
             System.out.println("_____________________");
             System.out.printf("NODE %d\n", n.id());

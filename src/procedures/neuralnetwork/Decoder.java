@@ -196,7 +196,7 @@ public class Decoder {
      * Prints the final solution to standard output.
      */
     public void print_solution() {
-        System.out.printf("SOLUTION DISTANCE: %.4f\n_______________________\n", total_distance);
+        System.out.printf("_______________________\nSOLUTION DISTANCE: %.4f\n_______________________\n", total_distance);
         int i = 1;
         for (int a : final_sol) {
             if (a == 0 && i != final_sol.size() && i != 1) {

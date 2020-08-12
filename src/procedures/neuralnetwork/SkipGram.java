@@ -1,6 +1,5 @@
 package procedures.neuralnetwork;
 
-import procedures.grapher.Graph;
 import utilities.Matrix;
 import utilities.Utilities;
 
@@ -25,8 +24,8 @@ public class SkipGram {
     /** Sample size of negative sampling. */
     private final int SAMPLE_SIZE;
 
-    /** Pointer to graph. */
-    private final Graph GRAPH;
+    /** Size of context. */
+    private final int CONTEXT_SIZE;
 
     /** Random walks stored in a list of lists. */
     private List<List<Integer>> WALKS;
@@ -46,15 +45,24 @@ public class SkipGram {
     /** One-Hot vector indicating input node. */
     private Matrix x_input;
 
+    /** Intermediate output matrix. */
+    private Matrix intermediate_output;
+
     /** Location of the current node in walks. */
     private int current_row;
     private int current_col;
 
-    /** Length of a route of an individual vehicle. */
-    private double path_length;
-
     /** List of id's in the sample. */
     private List<Integer> neg_sample;
+
+    /** Precomputed sets of contexts. */
+    private HashSet<Integer>[][] contexts;
+
+    /** Unigram distribution of words. */
+    private double[] unigram;
+
+    /** Additional information flag. */
+    private final boolean DEBUG;
 
     /**
      * Constructor for class SkipGram.
@@ -65,13 +73,14 @@ public class SkipGram {
      * @param features Number of features in node embedding.
      * @param sample_size Size of a negative sample.
      * @param learn_rate Rate for learning of the neural network.
-     * @param GRAPH Graph object on which learning is performed.
      */
-    public SkipGram(int num_of_nodes, int features, int sample_size, double learn_rate, Graph GRAPH) {
+    public SkipGram(int num_of_nodes, int features, int sample_size, int context_size, double learn_rate, boolean debug) {
         this.INPUT_SIZE = num_of_nodes;
         this.LEARN_RATE = learn_rate;
-        this.GRAPH = GRAPH;
         this.SAMPLE_SIZE = sample_size;
+        this.CONTEXT_SIZE = context_size;
+        this.DEBUG = debug;
+        x_input = new Matrix(INPUT_SIZE, 1);
         weights1 = new Matrix(INPUT_SIZE, features);
         weights2 = new Matrix(features, INPUT_SIZE);
         weights1.gaussian();
@@ -88,21 +97,99 @@ public class SkipGram {
      */
     public void train(int epochs, List<List<Integer>> walks) {
         this.WALKS = walks;
+        precompute_contexts();
+        create_unigram_distrib();
+        System.out.printf("Size of corpus: %d\n", WALKS.size());
+        double s = 0;
         for (int epoch = 0; epoch < epochs; epoch++) {
+            double loss = 0;
             for (int i = 0; i < WALKS.size(); i++) {
-                path_length = ut.path_length(GRAPH, walks.get(i));
                 for (int j = 0; j < WALKS.get(i).size(); j++) {
                     current_row = i;
                     current_col = j;
-                    int node_id = WALKS.get(i).get(j);
-                    forward_propagate(node_id);
-                    backpropagate();
+                    int center_node = WALKS.get(i).get(j);
+                    int lower = Math.max(0, j - CONTEXT_SIZE);
+                    int upper = Math.min(WALKS.get(i).size(), j + CONTEXT_SIZE + 1);
+                    for (int pos_index = lower; pos_index < upper; pos_index++) {
+                        if (pos_index != j) {
+                            int pos_node = WALKS.get(i).get(pos_index);
+                            forward_propagate(center_node, pos_node);
+                            backpropagate();
+                            int c = 0;
+                            for (int l = 0; l < INPUT_SIZE; l++) {
+                                if (contexts[i][j].contains(l)) {
+                                    loss += -intermediate_output.get(l, 0);
+                                    c++;
+                                }
+                            }
+                            loss = c * Math.log((intermediate_output.exp()).sum());
+                            if (DEBUG) {
+                                System.out.println("___________________");
+                                System.out.println("Walk: " + Arrays.toString(WALKS.get(i).toArray()));
+                                System.out.printf("Current node: %d\n", center_node);
+                                System.out.printf("Positive pair: [%d, %d]\n", center_node, pos_node);
+                                System.out.println("Context: " + Arrays.toString(contexts[i][j].toArray()));
+                                System.out.println("Negative sample with positive pair: " + Arrays.toString(neg_sample.toArray()));
+                                System.out.println("Output (sigmoided):" + Arrays.deepToString(output.get()));
+                            }
+                        }
+                    }
                 }
             }
-            if (epoch % 50 == 0) {
-                System.out.printf("%d. iterations\n", epoch);
+            if (epoch % 50 == 0 && epoch != 0) {
+                System.out.printf("Iter.: %d | %.2fms from last measurement.\n", epoch, (System.nanoTime() - s) / 1000000);
+                System.out.printf("Loss: %.2f\n", loss);
+                s = System.nanoTime();
+            }
+            else if (epoch == 0) {
+                s = System.nanoTime();
             }
         }
+    }
+
+    /**
+     * Calculates unigram distribution of nodes, from which negative samples are sampled.
+     */
+    public void create_unigram_distrib() {
+        double[] frequency = new double[INPUT_SIZE];
+        unigram = new double[INPUT_SIZE];
+        for (List<Integer> list : WALKS) {
+            for (int node : list) {
+                frequency[node]++;
+            }
+        }
+        int sum = 0;
+        for (double node_freq : frequency) {
+            sum += node_freq;
+        }
+        double prev = 0;
+        for (int i = 0; i < INPUT_SIZE; i++) {
+            unigram[i] = frequency[i] / sum + prev;
+            prev = unigram[i];
+        }
+    }
+
+    /**
+     * Precomputes context for every node in corpus 'WALKS'. Offers slight improvement,
+     * as contexts aren't calculated for every node in corpus in each iteration of training.
+     */
+    public void precompute_contexts() {
+        double s = System.nanoTime();
+        System.out.println("Precomputing contexts...");
+        contexts = new HashSet[WALKS.size()][WALKS.get(0).size()];
+        for (int i = 0; i < WALKS.size(); i++) {
+            for (int j = 0; j < WALKS.get(i).size(); j++) {
+                contexts[i][j] = new HashSet<>();
+                int lower = Math.max(0, j - CONTEXT_SIZE);
+                int upper = Math.min(WALKS.get(i).size(), j + CONTEXT_SIZE + 1);
+                for (int k = lower; k < upper; k++) {
+                    if (k != j) {
+                        contexts[i][j].add(WALKS.get(i).get(k));
+                    }
+                }
+            }
+        }
+        System.out.printf("Computing contexts took %.1f ms.\n", (System.nanoTime() - s) / 1000000);
     }
 
     /**
@@ -111,56 +198,19 @@ public class SkipGram {
      * @param id Node id, over which a next node is predicted.
      */
     public void predict(int id) {
-        forward_propagate(id);
-        output.show();
-        System.out.printf("MAX: %d: %.2f\n", output.which_max(), output.max());
-        weights1.show_row(id);
-    }
-
-    /**
-     * Predicts the next node in a route with a trained model and returns the output matrix.
-     *
-     * @param id Node id, over which a next node is predicted.
-     * @return Output matrix object. Elements represent the probability of each node being the next in route.
-     */
-    public Matrix process(int id) {
-        forward_propagate(id);
-        return output;
-    }
-
-    /**
-     * Performs the forward propagation of the input.
-     *
-     * @param id ID of a node that is forward propagated.
-     */
-    public void forward_propagate(int id) {
         x_input = new Matrix(INPUT_SIZE, 1);
         x_input.set(id, 0, 1);
         hidden_layer = x_input.vec_times(weights1);
-        neg_sample = negative_sample();
-        Matrix intermediate_output = weights2.transpose().multiply_rows(hidden_layer, neg_sample);
-        output = intermediate_output.sigmoid(neg_sample);
-    }
-
-    /**
-     * Performs back propagation of the output.
-     */
-    public void backpropagate() {
-        Matrix context = getContext();
-        Matrix error = new Matrix(output.rows(), 1);
-        for (int i : neg_sample) {
-            error.set(i, 0, output.get(i, 0) - context.get(i, 0) - (1 / path_length));
-        }
-        Matrix output_gradient = hidden_layer.times(error.transpose());
-        Matrix input_gradient = weights1.transpose().times(error);
-        input_gradient = x_input.times(input_gradient.transpose());
-        update_weights(input_gradient, output_gradient);
+        intermediate_output = weights2.transpose().times(hidden_layer);
+        output = softmax(intermediate_output);
+        output.show();
+        System.out.printf("Prediction for %d: %d with confidence %.2f\n", id, output.which_max(), output.max());
     }
 
     /**
      * Softmax function that takes a vector ([N x 1] matrix) as input and outputs a vector ([N x 1] matrix).
      *
-     * Final version uses negative sampling to increase performance.
+     * Final version uses negative sampling to increase performance and softmax is only used in prediction.
      *
      * @param A Input vector ([N x 1] matrix).
      * @return Output vector ([N x 1] matrix).
@@ -185,6 +235,48 @@ public class SkipGram {
     }
 
     /**
+     * Predicts the next node in a route with a trained model and returns the output matrix.
+     *
+     * @param id Node id, over which a next node is predicted.
+     * @return Output matrix object. Elements represent the probability of each node being the next in route.
+     */
+    public Matrix process(int id) {
+        x_input = new Matrix(INPUT_SIZE, 1);
+        x_input.set(id, 0, 1);
+        hidden_layer = x_input.vec_times(weights1);
+        intermediate_output = weights2.transpose().times(hidden_layer);
+        return softmax(intermediate_output);
+    }
+
+    /**
+     * Performs the forward propagation of the input.
+     *
+     * @param id ID of a node that is forward propagated.
+     */
+    public void forward_propagate(int id, int pos_id) {
+        x_input = new Matrix(INPUT_SIZE, 1);
+        x_input.set(id, 0, 1);
+        hidden_layer = x_input.vec_times(weights1);
+        neg_sample = negative_sample(pos_id);
+        intermediate_output = weights2.transpose().multiply_rows(hidden_layer, neg_sample);
+        output = intermediate_output.sigmoid(neg_sample);
+    }
+
+    /**
+     * Performs backpropagation of the output.
+     */
+    public void backpropagate() {
+        Matrix context = getContext();
+        Matrix error = new Matrix(output.rows(), 1);
+        for (int i : neg_sample) {
+            error.set(i, 0, output.get(i, 0) - context.get(i, 0));
+        }
+        Matrix output_gradient = error.multiply_vector_with_indices(hidden_layer.transpose(), neg_sample);
+        Matrix input_gradient = error.multiply_rows_to_vector(weights2.transpose(), neg_sample);
+        update_weights(input_gradient.transpose(), output_gradient);
+    }
+
+    /**
      * Function that returns a binary vector ([N x 1] 01-matrix) indicating nodes that are in the context of the current node.
      *
      * 1 in position 'i' means that the node with id 'i' is on the current route in the RandomWalk corpus.
@@ -192,15 +284,9 @@ public class SkipGram {
      * @return Binary vector ([N x 1] 01-matrix) representing current context.
      */
     public Matrix getContext() {
-        HashSet<Integer> walk_nodes = new HashSet<>();
-        for (int a : WALKS.get(current_row)) {
-            if (!walk_nodes.contains(a) && WALKS.get(current_row).get(current_col) != a) {
-                walk_nodes.add(a);
-            }
-        }
         Matrix A = new Matrix(INPUT_SIZE, 1);
         for (int i : neg_sample) {
-            if (walk_nodes.contains(i)) {
+            if (contexts[current_row][current_col].contains(i)) {
                 A.set(i, 0, 1);
             }
         }
@@ -214,15 +300,26 @@ public class SkipGram {
      *
      * @return List of ID's.
      */
-    public List<Integer> negative_sample() {
+    public List<Integer> negative_sample(int pos_id) {
         LinkedList<Integer> result = new LinkedList<>();
-        LinkedList<Integer> domain = new LinkedList<>();
-        for (int i = 0; i < GRAPH.size(); i++) domain.add(i);
+        HashSet<Integer> selected = new HashSet<>();
+        result.add(pos_id);
+        selected.add(pos_id);
         for (int i = 0; i < SAMPLE_SIZE; i++) {
-            int id = ut.random_int(domain.size());
-            result.add(domain.get(id));
-            domain.remove(id);
+            double random = ut.random_double(0, 1);
+            int node = 0;
+            while (random > unigram[node]) {
+                node++;
+            }
+            if (selected.contains(node) || node == WALKS.get(current_row).get(current_col) || contexts[current_row][current_col].contains(node)) {
+                i--;
+            }
+            else {
+                selected.add(node);
+                result.add(node);
+            }
         }
+        Collections.sort(result);
         return result;
     }
 
@@ -241,7 +338,8 @@ public class SkipGram {
     /**
      * Returns a matrix of node embeddings. In a graph with V nodes and a SkipGram model with F features,
      * the matrix is of dimensions [V x F].
-     * @return
+     *
+     * @return Matrix of embedding.
      */
     public Matrix embedding() {
         return this.weights1;

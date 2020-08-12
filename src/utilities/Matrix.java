@@ -32,6 +32,22 @@ final public class Matrix {
     }
 
     /**
+     * Matrix constructor with specified data array. Constructs a 2D-matrix.
+     *
+     * @param data 2D-array of values.
+     */
+    public Matrix(double[][] data) {
+        M = data.length;
+        N = data[0].length;
+        this.data = new double[M][N];
+        for (int j = 0; j < N; j++) {
+            for (int i = 0; i < M; i++) {
+                this.data[i][j] = data[i][j];
+            }
+        }
+    }
+
+    /**
      * Matrix constructor with specified data vector. Constructs a 1D-matrix.
      *
      * @param data 1D-array of values.
@@ -264,7 +280,7 @@ final public class Matrix {
      * Multiplies vector ([N x 1] matrix) with a matrix. Returns a vector ([M x 1] matrix).
      * To avoid the need to transpose matrices before multiplying.
      *
-     * @param B Matrix to multiply a current vector with.
+     * @param B Matrix to multiply current vector ([N x 1] matrix) with.
      * @return Resulting matrix.
      */
     public Matrix vec_times(Matrix B) {
@@ -385,6 +401,25 @@ final public class Matrix {
     }
 
     /**
+     * Multiplies matrices only in specified rows. Rows are passed in a List.
+     * Increases performance when only certain rows need multiplying.
+     *
+     * @param B Matrix to multiply with.
+     * @param rows List of rows to multiply.
+     * @return Resulting vector with 0's where rows were not multiplied.
+     */
+    public Matrix multiply_rows_to_vector(Matrix B, List<Integer> rows) {
+        Matrix A = this;
+        Matrix C = new Matrix(B.N, 1);
+        for (int j = 0; j < B.N; j++) {
+            for (int i : rows) {
+                C.data[j][0] += (A.data[i][0] * B.data[i][j]);
+            }
+        }
+        return C;
+    }
+
+    /**
      * Computes a vector ([M x 1] matrix) of same dimensions, but only sigmoid values passed
      * in parameter 'indexes' are computed.
      *
@@ -393,12 +428,12 @@ final public class Matrix {
      */
     public Matrix sigmoid(List<Integer> indexes) {
         Matrix A = this;
-        Matrix B = new Matrix(A.M, 1);
+        Matrix C = new Matrix(A.rows(), A.cols());
         for (int i : indexes) {
             double val = sigmoid(A.get(i, 0));
-            B.set(i, 0, val);
+            C.set(i, 0, val);
         }
-        return B;
+        return C;
     }
 
     /**
@@ -420,9 +455,9 @@ final public class Matrix {
      */
     public Matrix minus(Matrix B, int index) {
         Matrix A = this;
-        Matrix C = new Matrix(M, N);
+        Matrix C = new Matrix(A.data);
         for (int j = 0; j < N; j++) {
-            C.data[index][j] = A.data[index][j] - B.data[index][j];
+            C.data[index][j] = A.data[index][j] - B.data[0][j];
         }
         return C;
     }
@@ -436,11 +471,50 @@ final public class Matrix {
      */
     public Matrix minus(Matrix B, List<Integer> index) {
         Matrix A = this;
-        if (B.M != A.M || B.N != A.N) throw new RuntimeException("Illegal matrix dimensions.");
-        Matrix C = new Matrix(M, N);
+        Matrix C = new Matrix(A.data);
+        int idx = 0;
         for (int i : index) {
             for (int j = 0; j < M; j++) {
-                C.data[j][i] = A.data[j][i] - B.data[j][i];
+                C.data[j][i] = A.data[j][i] - B.data[idx][j];
+            }
+            idx++;
+        }
+        return C;
+    }
+
+    /**
+     * Problem specific function.
+     *
+     * Multiplies two vectors only on specific indices.
+     *
+     * @param B Second vector ([N x 1] matrix).
+     * @param rows Where to multiply.
+     * @return Resulting matrix.
+     */
+    public Matrix multiply_vector_with_indices(Matrix B, List<Integer> rows) {
+        Matrix A = this;
+        Matrix C = new Matrix(rows.size(), B.cols());
+        int num = 0;
+        for (int i : rows) {
+            for (int j = 0; j < B.cols(); j++) {
+                C.data[num][j] = A.data[i][0] * B.data[0][j];
+            }
+            num++;
+        }
+        return C;
+    }
+
+    /**
+     * Calculates e^x_i where x_i are elements of this matrix.
+     *
+     * @return Matrix of e^x_i elements.
+     */
+    public Matrix exp() {
+        Matrix A = this;
+        Matrix C = new Matrix(A.rows(), A.cols());
+        for (int i = 0; i < A.rows(); i++) {
+            for (int j = 0; j < A.cols(); j++) {
+                C.set(i, j, Math.exp(A.get(i, j)));
             }
         }
         return C;

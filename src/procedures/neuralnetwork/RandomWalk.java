@@ -3,7 +3,9 @@ package procedures.neuralnetwork;
 import procedures.grapher.Edge;
 import procedures.grapher.Graph;
 import procedures.grapher.Node;
+import utilities.Utilities;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -20,7 +22,7 @@ public class RandomWalk {
     private final Graph graph;
 
     /** Maximum allowed length of the walk. */
-    private final double WALK_LENGTH;
+    private final int WALK_LENGTH;
 
     /** Walks on each node. */
     private final int WALKS_PER_NODE;
@@ -31,11 +33,8 @@ public class RandomWalk {
     /** Constant Q. Probability to perform Breadth First Search. */
     private final double Q;
 
-    /** 2D-array of demands. */
-    private double[] dynamic_demands;
-
-    /** Weight of the car. */
-    private double car_weight;
+    /** Utilities. */
+    private Utilities ut = new Utilities();
 
     /**
      * RandomWalk constructor.
@@ -48,7 +47,7 @@ public class RandomWalk {
      * @param p Probability p.
      * @param q Probability q.
      */
-    public RandomWalk(Graph graph, double length, int walks_per_node, double p, double q) {
+    public RandomWalk(Graph graph, int length, int walks_per_node, double p, double q) {
         this.graph = graph;
         this.WALK_LENGTH = length;
         this.WALKS_PER_NODE = walks_per_node;
@@ -82,12 +81,7 @@ public class RandomWalk {
         List<Integer> walk = new LinkedList<>();
         Node current = node;
         Node prev = graph.depot();
-        car_weight = 0;
-        dynamic_demands = new double[graph.size()];
-        for (int i = 0; i < graph.size(); i++) {
-            dynamic_demands[i] = graph.getNodes().get(i).demand();
-        }
-        while (car_weight < WALK_LENGTH) {
+        for (int i = 0; i < WALK_LENGTH; i++) {
             Node next = getNeighbour(current, prev);
             walk.add(next.id());
             prev = current;
@@ -102,9 +96,9 @@ public class RandomWalk {
      * Parameters 'P' and 'Q' specify this distribution. Walks can be 'deep' or 'wide'
      * to better cover characteristics of the graph.
      *
-     * @param current
-     * @param prev
-     * @return
+     * @param current Current node.
+     * @param prev Last visited node.
+     * @return Next node.
      */
     public Node getNeighbour(Node current, Node prev) {
         List<Node> neighbours = new LinkedList<>();
@@ -121,11 +115,7 @@ public class RandomWalk {
                 probabilities.add((1 / Q) * edge.weight());
             }
         }
-        int index = getRandomIndex(probabilities);
-        Node result = neighbours.get(index);
-        car_weight += dynamic_demands[result.id()];
-        dynamic_demands[result.id()] = 0;
-        return result;
+        return neighbours.get(getRandomIndex(probabilities));
     }
 
     /**
@@ -146,8 +136,7 @@ public class RandomWalk {
             normalized.add(temp);
             prev = temp;
         }
-        Random r = new Random();
-        double x = r.nextDouble();
+        double x = ut.random_double(0, 1);
         int i = 0;
         while (x > normalized.get(i)) {
             i++;
