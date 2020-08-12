@@ -14,7 +14,7 @@ import java.util.*;
  * Performs decoding of the graph embedding and outputs a permutation of
  * node visitations.
  */
-public class Decoder {
+public class GreedyDecoder {
 
     /** Pointer to graph object. */
     private final Graph graph;
@@ -59,7 +59,7 @@ public class Decoder {
      * @param skipGram SkipGram object.
      * @param capacity Vehicle capacity constraint.
      */
-    public Decoder(Graph graph, SkipGram skipGram, double capacity) {
+    public GreedyDecoder(Graph graph, SkipGram skipGram, double capacity) {
         this.graph = graph;
         this.skipGram = skipGram;
         this.CAPACITY = capacity;

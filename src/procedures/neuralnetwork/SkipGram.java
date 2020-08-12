@@ -36,7 +36,7 @@ public class SkipGram {
     /** Matrix of weights between hidden and output layer. */
     private Matrix weights2;
 
-    /** Matrix of neurons in the hiddden layer. */
+    /** Matrix of neurons in the hidden layer. */
     private Matrix hidden_layer;
 
     /** Matrix of outputs. */
@@ -52,7 +52,7 @@ public class SkipGram {
     private int current_row;
     private int current_col;
 
-    /** List of id's in the sample. */
+    /** List of ID's in the sample (positive node is added before computing negative sample). */
     private List<Integer> neg_sample;
 
     /** Precomputed sets of contexts. */

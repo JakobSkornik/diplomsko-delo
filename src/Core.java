@@ -1,5 +1,5 @@
 import procedures.grapher.Graph;
-import procedures.neuralnetwork.Decoder;
+import procedures.neuralnetwork.GreedyDecoder;
 import procedures.neuralnetwork.RandomWalk;
 import procedures.neuralnetwork.SkipGram;
 
@@ -32,13 +32,14 @@ public class Core {
     private static final int CONTEXT_SIZE = 1;
     private static final double LEARN_RATE = 0.005;
     private static final int EPOCHS = 500;
+
+    /** Flag that enables additional debugging information. */
     private static final boolean DEBUG_MODE = false;
 
     /** Problem parameters. */
     private static final double CAPACITY = 500;
 
     /** The main function. */
-
     public static void main(String[] args) {
 
         // Create a random graph.
@@ -57,10 +58,10 @@ public class Core {
         skipgram.predict(4);
         skipgram.predict(7);
 
-        // Decode a solution from the trained model.
-        Decoder decoder = new Decoder(graph, skipgram, CAPACITY);
-        decoder.decode();
-        decoder.finalise();
-        decoder.print_solution();
+        // Decode a solution using greedy procedure from the trained model.
+        GreedyDecoder greedyDecoder = new GreedyDecoder(graph, skipgram, CAPACITY);
+        greedyDecoder.decode();
+        greedyDecoder.finalise();
+        greedyDecoder.print_solution();
     }
 }

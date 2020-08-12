@@ -42,7 +42,7 @@ final public class Matrix {
         this.data = new double[M][N];
         for (int j = 0; j < N; j++) {
             for (int i = 0; i < M; i++) {
-                this.data[i][j] = data[i][j];
+                this.set(i, j, data[i][j]);
             }
         }
     }
@@ -57,7 +57,7 @@ final public class Matrix {
         N = 1;
         this.data = new double[M][N];
         for (int i = 0; i < M; i++) {
-            this.data[i][0] = data[i];
+            this.set(i, 0, data[i]);
         }
     }
 
@@ -68,9 +68,9 @@ final public class Matrix {
      */
     public Matrix transpose() {
         Matrix A = new Matrix(N, M);
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                A.data[j][i] = this.data[i][j];
+        for (int i = 0; i < A.rows(); i++) {
+            for (int j = 0; j < A.cols(); j++) {
+                A.set(i, j, this.get(j, i));
             }
         }
         return A;
@@ -85,9 +85,9 @@ final public class Matrix {
     public Matrix plus(Matrix B) {
         Matrix A = this;
         Matrix C = new Matrix(M, N);
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                C.data[i][j] = A.data[i][j] + B.data[i][j];
+        for (int i = 0; i < C.rows(); i++) {
+            for (int j = 0; j < C.cols(); j++) {
+                C.set(i, j, A.get(i, j) + B.get(i, j));
             }
         }
         return C;
@@ -103,9 +103,9 @@ final public class Matrix {
     public Matrix minus(Matrix B) {
         Matrix A = this;
         Matrix C = new Matrix(M, N);
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                C.data[i][j] = A.data[i][j] - B.data[i][j];
+        for (int i = 0; i < C.rows(); i++) {
+            for (int j = 0; j < C.cols(); j++) {
+                C.set(i, j, A.get(i, j) - B.get(i, j));
             }
         }
         return C;
@@ -121,9 +121,9 @@ final public class Matrix {
     public Matrix minus(double constant) {
         Matrix A = this;
         Matrix B = new Matrix(M, N);
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                B.data[i][j] = A.data[i][j] - constant;
+        for (int i = 0; i < B.rows(); i++) {
+            for (int j = 0; j < B.cols(); j++) {
+                B.set(i, j, A.get(i, j) - constant);
             }
         }
         return B;
@@ -140,10 +140,10 @@ final public class Matrix {
     public Matrix times(Matrix B) {
         Matrix A = this;
         Matrix C = new Matrix(A.M, B.N);
-        for (int i = 0; i < C.M; i++) {
-            for (int j = 0; j < C.N; j++) {
-                for (int k = 0; k < A.N; k++) {
-                    C.data[i][j] += (A.data[i][k] * B.data[k][j]);
+        for (int i = 0; i < C.rows(); i++) {
+            for (int j = 0; j < C.cols(); j++) {
+                for (int k = 0; k < A.cols(); k++) {
+                    C.set(i, j, C.get(i, j) + A.get(i, k) * B.get(k, j));
                 }
             }
         }
@@ -155,8 +155,8 @@ final public class Matrix {
      */
     public void show() {
         System.out.printf("DIMS: %dx%d\n", this.M, this.N);
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++)
+        for (int i = 0; i < rows(); i++) {
+            for (int j = 0; j < cols(); j++)
                 System.out.printf("%9.4f ", data[i][j]);
             System.out.println();
         }
@@ -198,9 +198,9 @@ final public class Matrix {
     public void gaussian() {
         Random r = new Random();
         Matrix A = this;
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                A.data[i][j] = r.nextGaussian();
+        for (int i = 0; i < rows(); i++) {
+            for (int j = 0; j < cols(); j++) {
+                A.set(i, j, r.nextGaussian());
             }
         }
     }
@@ -393,8 +393,8 @@ final public class Matrix {
         Matrix A = this;
         Matrix C = new Matrix(A.M, 1);
         for (int i : rows) {
-            for (int j = 0; j < A.N; j++) {
-                C.data[i][0] += (A.data[i][j] * B.data[j][0]);
+            for (int j = 0; j < A.cols(); j++) {
+                C.set(i, 0, C.get(i, 0) + A.get(i, j) * B.get(j, 0));
             }
         }
         return C;
@@ -411,9 +411,9 @@ final public class Matrix {
     public Matrix multiply_rows_to_vector(Matrix B, List<Integer> rows) {
         Matrix A = this;
         Matrix C = new Matrix(B.N, 1);
-        for (int j = 0; j < B.N; j++) {
+        for (int j = 0; j < B.cols(); j++) {
             for (int i : rows) {
-                C.data[j][0] += (A.data[i][0] * B.data[i][j]);
+                C.set(j, 0, C.get(j, 0) + A.get(i, 0) * B.get(i, j));
             }
         }
         return C;
@@ -456,8 +456,8 @@ final public class Matrix {
     public Matrix minus(Matrix B, int index) {
         Matrix A = this;
         Matrix C = new Matrix(A.data);
-        for (int j = 0; j < N; j++) {
-            C.data[index][j] = A.data[index][j] - B.data[0][j];
+        for (int j = 0; j < cols(); j++) {
+            C.set(index, j, A.get(index, j) - B.get(0, j));
         }
         return C;
     }
@@ -474,8 +474,8 @@ final public class Matrix {
         Matrix C = new Matrix(A.data);
         int idx = 0;
         for (int i : index) {
-            for (int j = 0; j < M; j++) {
-                C.data[j][i] = A.data[j][i] - B.data[idx][j];
+            for (int j = 0; j < rows(); j++) {
+                C.set(j, i, A.get(j, i) - B.get(idx, j));
             }
             idx++;
         }
@@ -497,7 +497,7 @@ final public class Matrix {
         int num = 0;
         for (int i : rows) {
             for (int j = 0; j < B.cols(); j++) {
-                C.data[num][j] = A.data[i][0] * B.data[0][j];
+                C.set(num, j, A.get(i, 0) * B.get(0, j));
             }
             num++;
         }
