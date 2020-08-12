@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Matrix class. The original class is borrowed from 'https://introcs.cs.princetor.edu/java/95linear/Matrix.java.html'.
+ * Matrix class. The original class is borrowed from 'https://introcs.cs.princeton.edu/java/95linear/Matrix.java.html'.
  *
  * Implemented interface for matrix operations.
  */
