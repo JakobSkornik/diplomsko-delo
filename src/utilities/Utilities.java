@@ -1,8 +1,6 @@
 package utilities;
 
-import procedures.grapher.Graph;
-import procedures.grapher.Node;
-
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -13,7 +11,7 @@ import java.util.Random;
  */
 public class Utilities {
 
-    private Random r = new Random();
+    private final Random r = new Random();
 
     /**
      * Sigmoid function.
@@ -32,7 +30,7 @@ public class Utilities {
      * @param u Upper bound for double value.
      * @return Random double in range.
      */
-    public double random_double(double l, double u) {
+    public double randomDouble(double l, double u) {
         return (l + Math.random()* (u - l));
     }
 
@@ -42,25 +40,26 @@ public class Utilities {
      * @param u Upper limit integer.
      * @return Random integer.
      */
-    public int random_int(int u) {
+    public int randomInt(int u) {
         return r.nextInt(u);
     }
 
     /**
-     * Returns the total length of the path.
+     * Returns random Gaussian distribution double.
      *
-     * @param graph Graph object.
-     * @param path List of paths in order of traversal.
-     * @return Double that equals to total path length.
+     * @return The random double.
      */
-    public double path_length(Graph graph, List<Integer> path) {
-        double length = 0;
-        Node prev = graph.getNodes().get(path.get(0));
-        for (int i = 1; i < path.size(); i++) {
-            Node next = graph.getNodes().get(path.get(i));
-            length += prev.getEdges().get(next).weight();
-            prev = next;
-        }
-        return length;
+    public double gaussian() {
+        return r.nextGaussian();
+    }
+
+    /**
+     * Copy a list of integers.
+     *
+     * @param original The original list.
+     * @return The copied list.
+     */
+    public List<Integer> copy(List<Integer> original) {
+        return new LinkedList<>(original);
     }
 }

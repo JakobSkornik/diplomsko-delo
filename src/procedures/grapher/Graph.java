@@ -1,8 +1,8 @@
 package procedures.grapher;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Random;
+import utilities.Utilities;
+
+import java.util.*;
 
 /**
  * Graph class.
@@ -10,6 +10,9 @@ import java.util.Random;
  * Stores graph information.
  */
 public class Graph {
+
+    /** Utilities. */
+    private final Utilities ut;
 
     /** Map of nodes. */
     private final HashMap<Integer, Node> nodes;
@@ -23,7 +26,8 @@ public class Graph {
     /** Pointer to depot. */
     private Node depot;
 
-    private double CAPACITY;
+    /** Car capacity. */
+    private final double CAPACITY;
 
     /**
      * Graph constructor.
@@ -33,12 +37,12 @@ public class Graph {
      * @param mean Edge length mean.
      * @param deviation Edge length deviation.
      */
-    public Graph(int size, int sparseness, double mean, double deviation, double car_cap) {
+    public Graph(int size, int sparseness, double mean, double deviation, double car_cap, Utilities ut) {
         this.nodes = new HashMap<>();
         this.num_of_nodes = size;
         this.num_of_edges = sparseness;
         this.CAPACITY = car_cap;
-        Random r = new Random();
+        this.ut = ut;
         HashMap<Integer, Node> initial = new HashMap<>();
         HashSet<Node> S = new HashSet<>();
         for (int i = 0; i < size; i++) {
@@ -54,16 +58,16 @@ public class Graph {
         nodes.put(current.id(), current);
         int num_of_edges = 0;
         while (!S.isEmpty()) {
-            Node neighbour = initial.get(r.nextInt(initial.size()));
+            Node neighbour = initial.get(ut.randomInt(initial.size()));
             if (!nodes.containsKey(neighbour.id())) {
-                double length = r.nextGaussian() * deviation + mean;
+                double length = ut.gaussian() * deviation + mean;
                 if (length < 0) {
                     length = -length;
                 }
                 Edge edge1 = new Edge(current, neighbour, length);
-                current.add_edge(neighbour, edge1);
+                current.addEdge(neighbour, edge1);
                 Edge edge2 = new Edge(neighbour, current, length);
-                neighbour.add_edge(current, edge2);
+                neighbour.addEdge(current, edge2);
                 S.remove(neighbour);
                 nodes.put(neighbour.id(), neighbour);
                 num_of_edges++;
@@ -71,17 +75,17 @@ public class Graph {
             current = neighbour;
         }
         while (sparseness - num_of_edges >= 0) {
-            Node first = nodes.get(r.nextInt(nodes.size()));
-            Node second = nodes.get(r.nextInt(nodes.size()));
+            Node first = nodes.get(ut.randomInt(nodes.size()));
+            Node second = nodes.get(ut.randomInt(nodes.size()));
             if (first.id() != second.id() && !first.isNeighbour(second)) {
-                double length = r.nextGaussian() * deviation + mean;
+                double length = ut.gaussian() * deviation + mean;
                 if (length < 0) {
                     length = -length;
                 }
                 Edge edge1 = new Edge(first, second, length);
-                first.add_edge(second, edge1);
+                first.addEdge(second, edge1);
                 Edge edge2 = new Edge(second, first, length);
-                second.add_edge(first, edge2);
+                second.addEdge(first, edge2);
                 num_of_edges++;
             }
         }
@@ -93,13 +97,15 @@ public class Graph {
      * @param mean Gaussian distribution mean.
      * @param deviation Gaussian distribution deviation.
      */
-    public void set_demand(double mean, double deviation) {
-        Random r = new Random();
+    public void setDemand(double mean, double deviation) {
         for (int i = 1; i < nodes.size(); i++) {
             Node temp = nodes.get(i);
-            double demand = r.nextGaussian() * deviation + mean;
+            double demand = ut.gaussian() * deviation + mean;
             if (demand > CAPACITY) {
                 demand = demand - CAPACITY;
+            }
+            if (demand < 0) {
+                demand = -demand;
             }
             temp.setDemand(demand);
         }
@@ -108,13 +114,18 @@ public class Graph {
     /**
      * Prints a formatted text with graph information.
      */
-    public void print_graph() {
+    public void printGraph() {
         for (Node n : nodes.values()) {
             System.out.println("_____________________");
             System.out.printf("NODE %d\n", n.id());
             System.out.printf("DEMAND %.2f\n", n.demand());
+            LinkedList<Integer> edges = new LinkedList<>();
             for (Edge e : n.getEdges().values()) {
-                System.out.printf("%d ", e.to().id());
+                edges.add(e.to().id());
+            }
+            Collections.sort(edges);
+            for (int e : edges) {
+                System.out.printf("%d ", e);
             }
             System.out.println();
         }

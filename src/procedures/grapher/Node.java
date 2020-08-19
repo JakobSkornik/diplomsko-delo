@@ -35,7 +35,7 @@ public class Node {
      * @param neighbour Key that is used to obtain the edge.
      * @param edge Edge that is put in the map.
      */
-    public void add_edge(Node neighbour, Edge edge) {
+    public void addEdge(Node neighbour, Edge edge) {
         this.edges.put(neighbour, edge);
     }
 

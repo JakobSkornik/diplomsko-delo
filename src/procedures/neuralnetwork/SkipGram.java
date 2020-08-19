@@ -13,13 +13,16 @@ import java.util.*;
 public class SkipGram {
 
     /** Utilities. */
-    private final Utilities ut = new Utilities();
+    private final Utilities ut;
 
     /** Input size to the neural network. */
     private final int INPUT_SIZE;
 
     /** Learning rate of the neural network. */
-    private final double LEARN_RATE;
+    private double LEARN_RATE;
+
+    /** Minimal learn rate. */
+    private final double MIN_LEARN_RATE;
 
     /** Sample size of negative sampling. */
     private final int SAMPLE_SIZE;
@@ -74,17 +77,19 @@ public class SkipGram {
      * @param sample_size Size of a negative sample.
      * @param learn_rate Rate for learning of the neural network.
      */
-    public SkipGram(int num_of_nodes, int features, int sample_size, int context_size, double learn_rate, boolean debug) {
+    public SkipGram(int num_of_nodes, int features, int sample_size, int context_size, double learn_rate, double min_learn_rate, boolean debug, Utilities ut) {
         this.INPUT_SIZE = num_of_nodes;
         this.LEARN_RATE = learn_rate;
+        this.MIN_LEARN_RATE = min_learn_rate;
         this.SAMPLE_SIZE = sample_size;
         this.CONTEXT_SIZE = context_size;
         this.DEBUG = debug;
+        this.ut = ut;
         x_input = new Matrix(INPUT_SIZE, 1);
         weights1 = new Matrix(INPUT_SIZE, features);
         weights2 = new Matrix(features, INPUT_SIZE);
-        weights1.gaussian();
-        weights2.gaussian();
+        weights1.heInitialization(INPUT_SIZE);
+        weights2.heInitialization(INPUT_SIZE);
     }
 
     /**
@@ -97,8 +102,8 @@ public class SkipGram {
      */
     public void train(int epochs, List<List<Integer>> walks) {
         this.WALKS = walks;
-        precompute_contexts();
-        create_unigram_distrib();
+        precomputeContexts();
+        createUnigramDistrib();
         System.out.printf("Size of corpus: %d\n", WALKS.size());
         double s = 0;
         for (int epoch = 0; epoch < epochs; epoch++) {
@@ -113,7 +118,7 @@ public class SkipGram {
                     for (int pos_index = lower; pos_index < upper; pos_index++) {
                         if (pos_index != j) {
                             int pos_node = WALKS.get(i).get(pos_index);
-                            forward_propagate(center_node, pos_node);
+                            forwardPropagate(center_node, pos_node);
                             backpropagate();
                             int c = 0;
                             for (int l = 0; l < INPUT_SIZE; l++) {
@@ -122,7 +127,7 @@ public class SkipGram {
                                     c++;
                                 }
                             }
-                            loss = c * Math.log((intermediate_output.exp()).sum());
+                            loss += c * Math.log((intermediate_output.exp()).sum());
                             if (DEBUG) {
                                 System.out.println("___________________");
                                 System.out.println("Walk: " + Arrays.toString(WALKS.get(i).toArray()));
@@ -136,7 +141,7 @@ public class SkipGram {
                     }
                 }
             }
-            if (epoch % 50 == 0 && epoch != 0) {
+            if (epoch % 5 == 0 && epoch != 0) {
                 System.out.printf("Iter.: %d | %.2fms from last measurement.\n", epoch, (System.nanoTime() - s) / 1000000);
                 System.out.printf("Loss: %.2f\n", loss);
                 s = System.nanoTime();
@@ -144,13 +149,14 @@ public class SkipGram {
             else if (epoch == 0) {
                 s = System.nanoTime();
             }
+            LEARN_RATE = LEARN_RATE > MIN_LEARN_RATE ? LEARN_RATE * (1 / (1 + LEARN_RATE * epoch)) : MIN_LEARN_RATE;
         }
     }
 
     /**
      * Calculates unigram distribution of nodes, from which negative samples are sampled.
      */
-    public void create_unigram_distrib() {
+    public void createUnigramDistrib() {
         double[] frequency = new double[INPUT_SIZE];
         unigram = new double[INPUT_SIZE];
         for (List<Integer> list : WALKS) {
@@ -173,7 +179,7 @@ public class SkipGram {
      * Precomputes context for every node in corpus 'WALKS'. Offers slight improvement,
      * as contexts aren't calculated for every node in corpus in each iteration of training.
      */
-    public void precompute_contexts() {
+    public void precomputeContexts() {
         double s = System.nanoTime();
         System.out.println("Precomputing contexts...");
         contexts = new HashSet[WALKS.size()][WALKS.get(0).size()];
@@ -200,11 +206,11 @@ public class SkipGram {
     public void predict(int id) {
         x_input = new Matrix(INPUT_SIZE, 1);
         x_input.set(id, 0, 1);
-        hidden_layer = x_input.vec_times(weights1);
+        hidden_layer = x_input.vecTimes(weights1);
         intermediate_output = weights2.transpose().times(hidden_layer);
         output = softmax(intermediate_output);
         output.show();
-        System.out.printf("Prediction for %d: %d with confidence %.2f\n", id, output.which_max(), output.max());
+        System.out.printf("Prediction for %d: %d with confidence %.2f\n", id, output.whichMax(), output.max());
     }
 
     /**
@@ -243,7 +249,7 @@ public class SkipGram {
     public Matrix process(int id) {
         x_input = new Matrix(INPUT_SIZE, 1);
         x_input.set(id, 0, 1);
-        hidden_layer = x_input.vec_times(weights1);
+        hidden_layer = x_input.vecTimes(weights1);
         intermediate_output = weights2.transpose().times(hidden_layer);
         return softmax(intermediate_output);
     }
@@ -253,12 +259,12 @@ public class SkipGram {
      *
      * @param id ID of a node that is forward propagated.
      */
-    public void forward_propagate(int id, int pos_id) {
+    public void forwardPropagate(int id, int pos_id) {
         x_input = new Matrix(INPUT_SIZE, 1);
         x_input.set(id, 0, 1);
-        hidden_layer = x_input.vec_times(weights1);
-        neg_sample = negative_sample(pos_id);
-        intermediate_output = weights2.transpose().multiply_rows(hidden_layer, neg_sample);
+        hidden_layer = x_input.vecTimes(weights1);
+        neg_sample = negativeSample(pos_id);
+        intermediate_output = weights2.transpose().multiplyRows(hidden_layer, neg_sample);
         output = intermediate_output.sigmoid(neg_sample);
     }
 
@@ -271,9 +277,9 @@ public class SkipGram {
         for (int i : neg_sample) {
             error.set(i, 0, output.get(i, 0) - context.get(i, 0));
         }
-        Matrix output_gradient = error.multiply_vector_with_indices(hidden_layer.transpose(), neg_sample);
-        Matrix input_gradient = error.multiply_rows_to_vector(weights2.transpose(), neg_sample);
-        update_weights(input_gradient.transpose(), output_gradient);
+        Matrix output_gradient = error.multiplyVectorWithIndices(hidden_layer.transpose(), neg_sample);
+        Matrix input_gradient = error.multiplyRowsToVector(weights2.transpose(), neg_sample);
+        updateWeights(input_gradient.transpose(), output_gradient);
     }
 
     /**
@@ -300,13 +306,13 @@ public class SkipGram {
      *
      * @return List of ID's.
      */
-    public List<Integer> negative_sample(int pos_id) {
+    public List<Integer> negativeSample(int pos_id) {
         LinkedList<Integer> result = new LinkedList<>();
         HashSet<Integer> selected = new HashSet<>();
         result.add(pos_id);
         selected.add(pos_id);
         for (int i = 0; i < SAMPLE_SIZE; i++) {
-            double random = ut.random_double(0, 1);
+            double random = ut.randomDouble(0, 1);
             int node = 0;
             while (random > unigram[node]) {
                 node++;
@@ -329,7 +335,7 @@ public class SkipGram {
      * @param input_gradient Input gradient matrix.
      * @param output_gradient Output gradient matrix.
      */
-    public void update_weights(Matrix input_gradient, Matrix output_gradient) {
+    public void updateWeights(Matrix input_gradient, Matrix output_gradient) {
         int id = WALKS.get(current_row).get(current_col);
         weights1 = weights1.minus(input_gradient.times(LEARN_RATE), id);
         weights2 = weights2.minus(output_gradient.times(LEARN_RATE), neg_sample);

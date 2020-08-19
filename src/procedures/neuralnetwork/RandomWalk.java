@@ -5,10 +5,8 @@ import procedures.grapher.Graph;
 import procedures.grapher.Node;
 import utilities.Utilities;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * RandomWalk class.
@@ -34,7 +32,7 @@ public class RandomWalk {
     private final double Q;
 
     /** Utilities. */
-    private Utilities ut = new Utilities();
+    private Utilities ut;
 
     /**
      * RandomWalk constructor.
@@ -47,12 +45,13 @@ public class RandomWalk {
      * @param p Probability p.
      * @param q Probability q.
      */
-    public RandomWalk(Graph graph, int length, int walks_per_node, double p, double q) {
+    public RandomWalk(Graph graph, int length, int walks_per_node, double p, double q, Utilities ut) {
         this.graph = graph;
         this.WALK_LENGTH = length;
         this.WALKS_PER_NODE = walks_per_node;
         this.P = p;
         this.Q = q;
+        this.ut = ut;
     }
 
     /**
@@ -64,7 +63,7 @@ public class RandomWalk {
         List<List<Integer>> walks = new LinkedList<>();
         for (int iter = 0; iter < WALKS_PER_NODE; iter++) {
             for (Node node : graph.getNodes().values()) {
-                List<Integer> walk = single_walk(node);
+                List<Integer> walk = singleWalk(node);
                 walks.add(walk);
             }
         }
@@ -77,7 +76,7 @@ public class RandomWalk {
      * @param node Node object.
      * @return List of integers representing a single walk.
      */
-    public List<Integer> single_walk(Node node) {
+    public List<Integer> singleWalk(Node node) {
         List<Integer> walk = new LinkedList<>();
         Node current = node;
         Node prev = graph.depot();
@@ -106,13 +105,13 @@ public class RandomWalk {
         for (Edge edge : current.getEdges().values()) {
             neighbours.add(edge.to());
             if (prev.isNeighbour(edge.to())) {
-                probabilities.add(1.0 * edge.weight());
+                probabilities.add(1.0 / edge.weight());
             }
             else if (prev.id() == edge.to().id()) {
-                probabilities.add((1 / P) * edge.weight());
+                probabilities.add(1 / (P * edge.weight()));
             }
             else {
-                probabilities.add((1 / Q) * edge.weight());
+                probabilities.add(1 / (Q * edge.weight()));
             }
         }
         return neighbours.get(getRandomIndex(probabilities));
@@ -136,7 +135,7 @@ public class RandomWalk {
             normalized.add(temp);
             prev = temp;
         }
-        double x = ut.random_double(0, 1);
+        double x = ut.randomDouble(0, 1);
         int i = 0;
         while (x > normalized.get(i)) {
             i++;

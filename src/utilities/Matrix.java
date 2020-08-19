@@ -1,7 +1,6 @@
 package utilities;
 
 import java.util.List;
-import java.util.Random;
 
 /**
  * Matrix class. The original class is borrowed from 'https://introcs.cs.princeton.edu/java/95linear/Matrix.java.html'.
@@ -9,6 +8,9 @@ import java.util.Random;
  * Implemented interface for matrix operations.
  */
 final public class Matrix {
+
+    /** Utilities. */
+    private final Utilities ut = new Utilities();
 
     /** Number of rows. */
     private final int M;
@@ -167,7 +169,7 @@ final public class Matrix {
      *
      * @param row Index of the row.
      */
-    public void show_row(int row) {
+    public void showRow(int row) {
         System.out.printf("DIMS: %dx%d\n", this.M, this.N);
         System.out.printf("ROW: %d\n", row);
         for (int i = 0; i < cols(); i++) {
@@ -181,7 +183,7 @@ final public class Matrix {
      *
      * @param col Index of the column.
      */
-    public void show_col(int col) {
+    public void showCol(int col) {
         System.out.printf("DIMS: %dx%d\n", this.M, this.N);
         System.out.printf("COL: %d\n", col);
         for (int i = 0; i < rows(); i++) {
@@ -196,11 +198,27 @@ final public class Matrix {
      * from Gaussian distribution in range [0, 1).
      */
     public void gaussian() {
-        Random r = new Random();
         Matrix A = this;
         for (int i = 0; i < rows(); i++) {
             for (int j = 0; j < cols(); j++) {
-                A.set(i, j, r.nextGaussian());
+                A.set(i, j, ut.gaussian() * 2 - 1);
+            }
+        }
+    }
+
+    /**
+     * Initializes the matrix using He initialization.
+     *
+     * Variance^2 = 2 / SIZE
+     *
+     * @param size Size of input.
+     */
+    public void heInitialization(int size) {
+        Matrix A = this;
+        for (int i = 0; i < rows(); i++) {
+            for (int j = 0; j < cols(); j++) {
+                double weight = ut.randomDouble(0, 1) * Math.sqrt(2 / ((double) size - 1)) - 1;
+                A.set(i, j, weight);
             }
         }
     }
@@ -283,7 +301,7 @@ final public class Matrix {
      * @param B Matrix to multiply current vector ([N x 1] matrix) with.
      * @return Resulting matrix.
      */
-    public Matrix vec_times(Matrix B) {
+    public Matrix vecTimes(Matrix B) {
         Matrix A = this;
         Matrix C = new Matrix(B.cols(), 1);
         for (int i = 0; i < B.rows(); i++) {
@@ -301,7 +319,7 @@ final public class Matrix {
      *
      * @return Resulting vector ([M x 1] matrix).
      */
-    public Matrix sum_cols() {
+    public Matrix sumCols() {
         Matrix A = this;
         Matrix C = new Matrix(A.rows(), 1);
         for (int i = 0; i < A.rows(); i++) {
@@ -367,7 +385,7 @@ final public class Matrix {
      *
      * @return Index of row with the maximum value.
      */
-    public int which_max() {
+    public int whichMax() {
         double max = Double.MIN_VALUE;
         int idx = 0;
         for (int i = 0; i < rows(); i++) {
@@ -389,7 +407,7 @@ final public class Matrix {
      * @param rows List of rows to multiply.
      * @return Resulting matrix with 0's where rows were not multiplied.
      */
-    public Matrix multiply_rows(Matrix B, List<Integer> rows) {
+    public Matrix multiplyRows(Matrix B, List<Integer> rows) {
         Matrix A = this;
         Matrix C = new Matrix(A.M, 1);
         for (int i : rows) {
@@ -408,7 +426,7 @@ final public class Matrix {
      * @param rows List of rows to multiply.
      * @return Resulting vector with 0's where rows were not multiplied.
      */
-    public Matrix multiply_rows_to_vector(Matrix B, List<Integer> rows) {
+    public Matrix multiplyRowsToVector(Matrix B, List<Integer> rows) {
         Matrix A = this;
         Matrix C = new Matrix(B.N, 1);
         for (int j = 0; j < B.cols(); j++) {
@@ -466,14 +484,14 @@ final public class Matrix {
      * Computes a difference of matrices, but only in the rows specified by List of indexes.
      *
      * @param B Matrix that is used to calculate difference with.
-     * @param index List of indexes of rows.
+     * @param rows List of indexes of rows.
      * @return Resulting matrix of dimensions [M x N].
      */
-    public Matrix minus(Matrix B, List<Integer> index) {
+    public Matrix minus(Matrix B, List<Integer> rows) {
         Matrix A = this;
         Matrix C = new Matrix(A.data);
         int idx = 0;
-        for (int i : index) {
+        for (int i : rows) {
             for (int j = 0; j < rows(); j++) {
                 C.set(j, i, A.get(j, i) - B.get(idx, j));
             }
@@ -491,7 +509,7 @@ final public class Matrix {
      * @param rows Where to multiply.
      * @return Resulting matrix.
      */
-    public Matrix multiply_vector_with_indices(Matrix B, List<Integer> rows) {
+    public Matrix multiplyVectorWithIndices(Matrix B, List<Integer> rows) {
         Matrix A = this;
         Matrix C = new Matrix(rows.size(), B.cols());
         int num = 0;
