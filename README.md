@@ -62,6 +62,7 @@ Funkcijo prehodov si lahko predstavljamo kot tabelo. Stolpci predstavljajo stanj
 |b|(a,Q3,R)|...|...|...|
 |c|...|...|...|...|
 |B|...|...|...|...|
+
 Primer tabele prehodov.
 
 Glede na funckijo prehodov se pojavita dve obliki Turingovih strojev. **Deterministični Turingov stroj** ima vsako celico zapolnjeno z natanko eno akcijo. **Nedeterministični Turingov stroj** te omejitve nima. To pomeni, da je lahko v celici več akcij za isti par stanja in simbola.
@@ -79,6 +80,7 @@ Poglejmo si primer, ki dobro nakaže razliko med determinističnim in nedetermin
 |---|---|
 |0|(0,Q1,L), (0,Q1,R)|
 |1|(1,Qf,-)|
+
 Tabela prehodov za NTS.
 
 Pri determinističnemu je nekoliko bolj zapleteno saj nevemo v kateri smeri na traku je enica. Preostane nam nič drugega kot da preiščemo vse možne celice. Preverimo celici, ki sta od začetne celice oddaljene za eno polje. Nato celici, ki sta oddaljeni za dve polji. Postopek se nato ponavlja dokler ne najdemo enice. Prav tako nam deterministični Turingov stroj ne zna odgovoriti na vprašanje, ali je na traku kakšna enica. V primeru, da enice ni, se postopek izvaja v neskončnost, odgovora pa ne dobimo.
