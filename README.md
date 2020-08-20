@@ -97,9 +97,9 @@ Razred **NP** vsebuje tudi podmnožico problemov, ki ji pravimo **NP-poln** razr
 
 Beseda hevristično izhaja iz stare grške besede *heurios* (*spoznam, ugotovim*). Že ime samo nam pove, da temelji pristop hevrističnih algoritmov na načelih raziskovanja, odkrivanja in prilagajanja. 
 
-Problem potujočega trgovca je klasičen problem *kombinatorične optimizacije*. Podan imamo graf G = <V, E>, kjer je *V* množica vozlišč in *E* množica povezav. Vsaka povezava ima podano tudi svojo dolžino. Zanima nas najkrajši možni obhod, kjer so obiskana vsa vozlišča vsaj enkrat. Poenostavljena oblika problema ima podana samo vozlišča z njihovimi koordinatami G=<V>. V tem primeru iščemo le permutacijo množice *V*, ki ima najmanjšo skupno razdaljo. 
+Problem potujočega trgovca je klasičen problem *kombinatorične optimizacije*. Podan imamo graf G = < V, E >, kjer je *V* množica vozlišč in *E* množica povezav. Vsaka povezava ima podano tudi svojo dolžino. Zanima nas najkrajši možni obhod, kjer so obiskana vsa vozlišča vsaj enkrat. Poenostavljena oblika problema ima podana samo vozlišča z njihovimi koordinatami G= < V >. V tem primeru iščemo le permutacijo množice *V*, ki ima najmanjšo skupno razdaljo. 
 
-Najpreprostejši način za rešitev tega problema je, da preprosto naštejemo vse permutacije množice *V* in jim izračunamo kakovost. Na koncu izberemo *najkvalitetnejšo permutacijo*. Če je velikost množice *n*, je število vseh možnih permutacij enako *n!*. Takšnega števila permutacij ni smiselno računati tudi že za zelo majhne *n* (15! = 1307674368000).
+Najpreprostejši način za rešitev tega problema je, da preprosto naštejemo vse permutacije množice *V* in jim izračunamo kakovost. Na koncu izberemo *najkvalitetnejšo permutacijo*. Če je velikost množice enako *|V| = n*, je število vseh možnih permutacij enako *n!*. Takšnega števila permutacij ni smiselno računati tudi že za zelo majhne *n* (15! = 1307674368000).
 
 Mero, ki jo želimo optimizirati, imenujemo **kakovost rešitve**. Kakovost rešitve je lahko katerakoli mera, ki jo želimo optimizirati. Lahko optimiziramo čas potreben za potovanje, finančni strošek potovanja ali pa porabo goriva. Izbrana mera za kakovost rešitve in vhodni podatki nam definirajo *prostor rešitev*.
 
