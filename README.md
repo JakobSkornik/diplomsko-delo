@@ -11,7 +11,7 @@ Strojno učenje je hitro razvijajoča se veja umetne inteligence. Algoritmi stro
 
 Namen tega dela je uporaba metod strojnega učenja za kombinatorično optimizacijo. Izbran problem kombinatorične optimizacije se imenuje problem usmerjanja vozil. Gre za iskanje optimalne množice poti čez ciljna vozlišča za vozila z omejeno nosilnostjo. Vsaka posamezna pot pa se začne in konča v enem izhodišču. Problem se predstavi z grafom, kjer ima vsako vozlišče težo (lahko enako 0), vsaka povezava svojo razdaljo in označeno ciljno izhodišče. Težko je definirati lastnosti grafa, s katerimi bi lahko našli dobro rešitev. Tu se strojno učenje, še posebej globoko učenje, izkaže za primernega kandidata. Poraja se vprašanje ali je možno zadovoljivo definirati lastnosti grafa z globokim učenjem.
 
-V poglavju (2) je predstavljena kombinatorična optimizacija in problem usmerjanja vozil. V poglavju (3) je predstavljeno strojno učenje in metode, ki so uporabljene v tem delu. Temo sledi poglavje z preizkusi. Rezultati preizkusov so v naslednjem poglavju. V poglavju (6) so sklepne besede in ugotovitve.
+V poglavju (2) je predstavljena kombinatorična optimizacija in problem usmerjanja vozil. V poglavju (3) je predstavljeno strojno učenje in metode, ki so uporabljene v tem delu. Temu sledi poglavje s preizkusi. Rezultati preizkusov so v naslednjem poglavju. V poglavju (6) so sklepne besede in ugotovitve.
 
 ___________
 
