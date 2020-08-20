@@ -111,7 +111,7 @@ Hevristike posledično ne zagotavljajo, da je končna rešitev optimalna. Tudi �
 
 Ena izmed najbolj znanih metahevristik je **simulirano ohlajanje**, angl. *simulated annealing*. Je ena izmed mnogih naravno inspiriranih hevristik. Navdih je pridobljen iz simuliranega ohlajanja kovin. Uporabljena je formula za notranjo energijo fizičnega sistema:
 
-    P(s) = e ^ (-(S - Sbest) / T)
+    P(S) = e ^ (-(S - Sbest) / T)
 
 V algoritmu je formula uporabljena kot verjetnost, da se izbere slabša rešitev v posamezni iteraciji. Temperatura se postopoma manjša, z njo pa se manjša tudi verjetnost za prehod v slabšo rešitev. Na začetku je izbor rešitev skoraj popolnoma naključen z namenom, da se preišče čim širši obseg rešitev. Iskanje se nato počasi usmeri v najboljši optimum.
 
