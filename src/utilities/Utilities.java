@@ -1,5 +1,6 @@
 package utilities;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -62,4 +63,10 @@ public class Utilities {
     public List<Integer> copy(List<Integer> original) {
         return new LinkedList<>(original);
     }
+
+    public LinkedList<Integer> copy(LinkedList<Integer> original) {
+        return new LinkedList<>(original);
+    }
+
+    public double[] copy(double[] original) { return Arrays.copyOf(original, original.length); }
 }

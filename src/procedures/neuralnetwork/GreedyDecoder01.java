@@ -14,13 +14,13 @@ import java.util.*;
  * Performs decoding of the graph embedding and outputs a permutation of
  * node visitations.
  */
-public class GreedyDecoder {
+public class GreedyDecoder01 {
 
     /** Pointer to graph object. */
     private final Graph graph;
 
     /** Pointer to AutoEncoder01 model. */
-    private final AutoEncoder autoEncoder;
+    private final AutoEncoder01 autoEncoder;
 
     /** 2D-array of dynamic demands. */
     private final double[] cleanliness;
@@ -43,6 +43,9 @@ public class GreedyDecoder {
     /** List representing the final solution. */
     private List<Integer> final_sol;
 
+    /** List representing the final Beam Search solution. */
+    private List<Integer> final_beam_sol;
+
     private final FloydWarshall floydWarshall;
 
     /**
@@ -54,7 +57,7 @@ public class GreedyDecoder {
      * @param autoEncoder AutoEncoder01 object.
      * @param capacity Vehicle capacity constraint.
      */
-    public GreedyDecoder(Graph graph, AutoEncoder autoEncoder, double capacity, FloydWarshall fw) {
+    public GreedyDecoder01(Graph graph, AutoEncoder01 autoEncoder, double capacity, FloydWarshall fw) {
         this.graph = graph;
         this.autoEncoder = autoEncoder;
         this.CAPACITY = capacity;
@@ -93,7 +96,7 @@ public class GreedyDecoder {
             }
             solution.add(0);
         }
-        final_sol = floydWarshall.finalizePath(floydWarshall.finalizePath(floydWarshall.permutationToPath(solution, CAPACITY)));
+        final_sol = floydWarshall.finalizePath(floydWarshall.permutationToPath(solution, CAPACITY));
         total_distance = floydWarshall.distance();
     }
 
@@ -120,11 +123,11 @@ public class GreedyDecoder {
      */
     public Node getNext(int prev_id, double weight) {
         Matrix output = autoEncoder.process(prev_id);
-        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
         int id = -1;
         for (int i = 0; i < output.rows(); i++) {
-            if (min > output.get(i, 0) && !visited.containsKey(i) && weight + graph.getNodes().get(i).demand() <= CAPACITY) {
-                min = output.get(i, 0);
+            if (max < output.get(i, 0) && !visited.containsKey(i) && weight + graph.getNodes().get(i).demand() <= CAPACITY) {
+                max = output.get(i, 0);
                 id = i;
             }
         }
@@ -135,7 +138,7 @@ public class GreedyDecoder {
      * Prints the final solution to standard output.
      */
     public void printSolution() {
-        System.out.printf("_______________________\nGREEDY DECODER\nSOLUTION DISTANCE: %.4f\n_______________________\n", total_distance);
+        System.out.printf("_______________________\nGREEDY 01 DECODER\nSOLUTION DISTANCE: %.4f\n_______________________\n", total_distance);
         int i = 1;
         for (int a : final_sol) {
             if (a == 0 && i != final_sol.size() && i != 1) {
@@ -150,6 +153,6 @@ public class GreedyDecoder {
     }
 
     public void log(PrintWriter printer) {
-        printer.printf("2,%.4f\n", total_distance);
+        printer.printf("3,%.4f\n", total_distance);
     }
 }

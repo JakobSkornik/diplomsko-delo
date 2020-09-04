@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Autoencoder class.
  *
- * Adapted SkipGram algorithm.
+ * Adapted AutoEncoder01 algorithm.
  */
 public class AutoEncoder {
 
@@ -52,9 +52,9 @@ public class AutoEncoder {
     private final boolean DEBUG;
 
     /**
-     * Constructor for class SkipGram.
+     * Constructor for class AutoEncoder01.
      *
-     * Constructs a SkipGram class based on parameters passed.
+     * Constructs a AutoEncoder01 class based on parameters passed.
      *
      * @param num_of_nodes Number of nodes in the graph.
      * @param features Number of features in node embedding.
@@ -76,7 +76,7 @@ public class AutoEncoder {
      * Train function.
      *
      * Performs 'epochs' number of iterations on each integer element of 'walks'.
-     * Trains the SkipGram model.
+     * Trains the AutoEncoder01 model.
      * @param epochs Number of iterations of training.
      * @param walks List of Lists of integers representing nodes.
      */
@@ -210,7 +210,7 @@ public class AutoEncoder {
     }
 
     /**
-     * Returns a matrix of node embeddings. In a graph with V nodes and a SkipGram model with F features,
+     * Returns a matrix of node embeddings. In a graph with V nodes and a AutoEncoder01 model with F features,
      * the matrix is of dimensions [V x F].
      *
      * @return Matrix of embedding.

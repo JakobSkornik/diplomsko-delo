@@ -85,7 +85,7 @@ public class Greedy {
         }
         solution.add(graph.depot().id());
         permutation = ut.copy(solution);
-        solution = floydWarshall.finalizePath(solution);
+        solution = floydWarshall.finalizePath(floydWarshall.permutationToPath(solution, CAPACITY));
         total_distance = floydWarshall.distance();
     }
 
@@ -206,6 +206,6 @@ public class Greedy {
     }
 
     public void log(PrintWriter printer) {
-        printer.printf("2,%.4f\n", total_distance);
+        printer.printf("1,%.4f\n", total_distance);
     }
 }

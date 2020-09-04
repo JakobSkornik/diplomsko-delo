@@ -116,6 +116,6 @@ public class SimulatedAnnealing {
     }
 
     public void log(PrintWriter printer) {
-        printer.printf("3,%.4f\n", final_distance);
+        printer.printf("4,%.4f\n", final_distance);
     }
 }
