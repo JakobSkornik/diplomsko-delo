@@ -1,0 +1,134 @@
+/usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/java -javaagent:/snap/intellij-idea-ultimate/245/lib/idea_rt.jar=44081:/snap/intellij-idea-ultimate/245/bin -Dfile.encoding=UTF-8 -classpath /home/jakob/Desktop/Diploma/out/production/Diploma:/home/jakob/.m2/repository/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar:/home/jakob/.m2/repository/junit/junit/4.10/junit-4.10.jar:/home/jakob/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar Core
+_____________________
+NODE 0
+DEMAND 0.00
+1 4 5 6 7 8 
+_____________________
+NODE 1
+DEMAND 19.87
+0 2 4 7 
+_____________________
+NODE 2
+DEMAND 54.19
+1 3 4 5 6 
+_____________________
+NODE 3
+DEMAND 37.84
+2 6 7 8 9 
+_____________________
+NODE 4
+DEMAND 37.58
+0 1 2 5 6 8 9 
+_____________________
+NODE 5
+DEMAND 29.17
+0 2 4 7 9 
+_____________________
+NODE 6
+DEMAND 18.99
+0 2 3 4 8 9 
+_____________________
+NODE 7
+DEMAND 39.04
+0 1 3 5 8 
+_____________________
+NODE 8
+DEMAND 38.87
+0 3 4 6 7 
+_____________________
+NODE 9
+DEMAND 38.53
+3 4 5 6 
+_____________________
+Number of walks: 400
+___________________
+Iter:    5 | 771.91ms
+Loss: 26248.38
+___________________
+Iter:   10 | 488.51ms
+Loss: 25900.18
+___________________
+Iter:   15 | 376.56ms
+Loss: 25786.71
+___________________
+Iter:   20 | 331.28ms
+Loss: 25730.51
+___________________
+Iter:   25 | 258.46ms
+Loss: 25698.78
+___________________
+Iter:   30 | 238.67ms
+Loss: 25680.25
+___________________
+Iter:   35 | 240.91ms
+Loss: 25669.41
+___________________
+Iter:   40 | 240.48ms
+Loss: 25663.15
+___________________
+Iter:   45 | 240.17ms
+Loss: 25659.60
+Precomputing contexts...
+Computing contexts took 5.4 ms.
+Size of corpus: 400
+___________________
+Iter.: 5 | 546.89ms
+Loss: 27844.12
+___________________
+Iter.: 10 | 429.88ms
+Loss: 27827.91
+___________________
+Iter.: 15 | 431.56ms
+Loss: 27801.45
+___________________
+Iter.: 20 | 429.64ms
+Loss: 27805.52
+___________________
+Iter.: 25 | 436.09ms
+Loss: 27726.67
+___________________
+Iter.: 30 | 427.65ms
+Loss: 27747.76
+___________________
+Iter.: 35 | 430.01ms
+Loss: 27778.43
+___________________
+Iter.: 40 | 432.37ms
+Loss: 27709.46
+___________________
+Iter.: 45 | 428.50ms
+Loss: 27807.43
+_______________________
+GREEDY DECODER
+SOLUTION DISTANCE: 2317.6242
+_______________________
+0 1 7 5 0
+0 6 9 3 8 0
+0 8 4 0
+0 1 2 1 0 
+_______________________
+GREEDY
+SOLUTION DISTANCE: 2394.3478
+_______________________
+0 1 7 5 0
+0 8 3 6 0
+0 4 9 6 0
+0 1 2 1 0 
+_______________________
+GREEDY 01 DECODER
+SOLUTION DISTANCE: 2317.6242
+_______________________
+0 1 7 5 0
+0 6 9 3 8 0
+0 8 4 0
+0 1 2 1 0 
+_______________________
+SIMULATED ANNEALING
+SOLUTION DISTANCE: 2354.6223
+_______________________
+0 6 9 3 8 0
+0 8 4 5 0
+0 5 2 1 0
+0 1 7 0 
+
+Process finished with exit code 0
